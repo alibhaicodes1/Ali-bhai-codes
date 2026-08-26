@@ -1,8 +1,9 @@
 package com.alibhaicodes.app
 
-import android.os.Bundle
 import android.graphics.Color
+import android.os.Bundle
 import android.view.Gravity
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -31,8 +32,19 @@ class MainActivity : AppCompatActivity() {
         subtitle.gravity = Gravity.CENTER
         subtitle.setPadding(0, 20, 0, 40)
 
+        val startButton = Button(this)
+        startButton.text = "START"
+        startButton.textSize = 18f
+
+        startButton.setOnClickListener {
+            title.text = "Let's Go! 🔥"
+            subtitle.text = "Welcome to Ali Bhai Codes"
+            startButton.text = "STARTED ✓"
+        }
+
         layout.addView(title)
         layout.addView(subtitle)
+        layout.addView(startButton)
 
         setContentView(layout)
     }
