@@ -1,6 +1,7 @@
 package com.alibhaicodes.app
 
 import android.graphics.Color
+import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
 import android.widget.Button
@@ -39,6 +40,8 @@ class MainActivity : AppCompatActivity() {
         startButton.setOnClickListener {
             title.text = "Let's Go! 🔥"
             subtitle.text = "Welcome to Ali Bhai Codes"
+            val intent = Intent(this, SecondActivity::class.java)
+startActivity(intent)
             startButton.text = "STARTED ✓"
         }
 
