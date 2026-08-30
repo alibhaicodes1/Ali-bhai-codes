@@ -2,6 +2,7 @@ package com.alibhaicodes.app
 
 import android.graphics.Color
 import android.os.Bundle
+import android.text.InputType
 import android.view.Gravity
 import android.widget.Button
 import android.widget.EditText
@@ -11,11 +12,16 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 
 class SecondActivity : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
 
         val scrollView = ScrollView(this)
 
@@ -46,13 +52,7 @@ class SecondActivity : AppCompatActivity() {
         title.setTextColor(Color.WHITE)
         title.gravity = Gravity.CENTER
 
-        layout.addView(
-            title,
-            LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-        )
+        layout.addView(title)
 
         // SUBTITLE
         val subtitle = TextView(this)
@@ -73,16 +73,18 @@ class SecondActivity : AppCompatActivity() {
 
         layout.addView(loginTitle)
 
-        // EMAIL / MOBILE
-        val userInput = EditText(this)
-        userInput.hint = "Gmail or Mobile Number"
-        userInput.textSize = 16f
-        userInput.setSingleLine(true)
-        userInput.setTextColor(Color.WHITE)
-        userInput.setHintTextColor(Color.GRAY)
+        // EMAIL
+        val emailInput = EditText(this)
+        emailInput.hint = "Enter Gmail"
+        emailInput.textSize = 16f
+        emailInput.setSingleLine(true)
+        emailInput.inputType = InputType.TYPE_CLASS_TEXT or
+                InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        emailInput.setTextColor(Color.WHITE)
+        emailInput.setHintTextColor(Color.GRAY)
 
         layout.addView(
-            userInput,
+            emailInput,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -91,12 +93,11 @@ class SecondActivity : AppCompatActivity() {
 
         // PASSWORD
         val passwordInput = EditText(this)
-        passwordInput.hint = "Password"
+        passwordInput.hint = "Enter Password"
         passwordInput.textSize = 16f
         passwordInput.setSingleLine(true)
-        passwordInput.inputType =
-            android.text.InputType.TYPE_CLASS_TEXT or
-            android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+        passwordInput.inputType = InputType.TYPE_CLASS_TEXT or
+                InputType.TYPE_TEXT_VARIATION_PASSWORD
         passwordInput.setTextColor(Color.WHITE)
         passwordInput.setHintTextColor(Color.GRAY)
 
@@ -140,7 +141,7 @@ class SecondActivity : AppCompatActivity() {
 
         layout.addView(redeemTitle)
 
-        // REDEEM CODE INPUT
+        // REDEEM INPUT
         val redeemInput = EditText(this)
         redeemInput.hint = "Enter Redeem Code"
         redeemInput.textSize = 16f
@@ -184,14 +185,14 @@ class SecondActivity : AppCompatActivity() {
             )
         )
 
-        // LOGIN ACTION
+        // LOGIN
         loginButton.setOnClickListener {
 
-            val username = userInput.text.toString().trim()
+            val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString()
 
-            if (username.isEmpty()) {
-                userInput.error = "Enter Gmail or Mobile Number"
+            if (email.isEmpty()) {
+                emailInput.error = "Enter Gmail"
                 return@setOnClickListener
             }
 
@@ -200,19 +201,41 @@ class SecondActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            status.text = "✅ Logged in successfully"
             loginButton.isEnabled = false
-            redeemButton.isEnabled = true
-            logoutButton.isEnabled = true
+            status.text = "Checking login..."
 
-            Toast.makeText(
-                this,
-                "Login successful!",
-                Toast.LENGTH_SHORT
-            ).show()
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnSuccessListener {
+
+                    status.text = "✅ Logged in successfully"
+
+                    loginButton.isEnabled = false
+                    redeemButton.isEnabled = true
+                    logoutButton.isEnabled = true
+
+                    Toast.makeText(
+                        this,
+                        "Login successful!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                .addOnFailureListener {
+
+                    status.text = "❌ Wrong Gmail or Password"
+
+                    loginButton.isEnabled = true
+                    redeemButton.isEnabled = false
+                    logoutButton.isEnabled = false
+
+                    Toast.makeText(
+                        this,
+                        "Login failed",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
         }
 
-        // REDEEM ACTION
+        // REDEEM
         redeemButton.setOnClickListener {
 
             val code = redeemInput.text.toString().trim()
@@ -229,8 +252,10 @@ class SecondActivity : AppCompatActivity() {
             ).show()
         }
 
-        // LOGOUT ACTION
+        // LOGOUT
         logoutButton.setOnClickListener {
+
+            auth.signOut()
 
             status.text = "Not logged in"
 
@@ -238,7 +263,7 @@ class SecondActivity : AppCompatActivity() {
             redeemButton.isEnabled = false
             logoutButton.isEnabled = false
 
-            userInput.text.clear()
+            emailInput.text.clear()
             passwordInput.text.clear()
             redeemInput.text.clear()
 
